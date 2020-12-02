@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import Data from './database/data.json';
 
 @Component({
   selector: 'app-root',
@@ -7,4 +8,6 @@ import { Component } from '@angular/core';
 })
 export class AppComponent {
   title = 'lesMillions';
+  names: string[] = Data.table.map(o => o.name);
+  table: any = Data.table;
 }
