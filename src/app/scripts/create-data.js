@@ -16,45 +16,24 @@ const gridNumberPerParticipant = 10;
 
 const participants = ['Delphine', 'Gabrielle', 'Pierre', 'Charles', 'Jules', 'François', 'Colin', 'Benjamin', 'Michel']
 
-function generate() {
-    let data = {};
-    data.table = [];
-
-    for (let i = 0; i < participants.length - 1; i++) {
-        const name = participants[i];
-        const grids = [];
-        for (let j = 0; j < gridNumberPerParticipant; j++) {
-            let grid = "";
-            let stars = "";
-            grid = generateNumbers(5, numbers, hotNumbers);
-            stars = generateNumbers(3, starNumbers, hotStarNumbers);
-            grids.push({
-                grid: grid,
-                stars: stars
-            })
-        }
-        data.table.push({
-            name: name,
-            grids: grids
-        });
-    }
-
-    generateDataForMichel(data);
-
-    fs.writeFile('../lesMillions/src/app/database/data.json', JSON.stringify(data), (err) => {
-        if (err) throw err;
-    });
+var myargs = process.argv.slice(2);
+if (myargs[0] == "-g") {
+    console.log(myargs[1]);
+    const data = readFromDatabase();
+    generateDataFor(data, myargs[1]);
+    writeToDatabase(data);
 }
 
-function generateDataForMichel(data) {
-    const name = "Michel";
+
+function generateDataFor(data, newName) {
     const grids = [];
     for (let index = 0; index < gridNumberPerParticipant; index++) {
-        const grid = generateSequenceForMichel(5, allNumbers);
-        const stars = generateSequenceForMichel(3, allStars);
+        const grid = generateNumbers(5, numbers, hotNumbers);
+        const stars = generateNumbers(2, starNumbers, hotStarNumbers);
         grids.push({ grid: grid, stars: stars });
     }
-    data.table.push({ name: name, grids: grids });
+    data.table.push({ name: newName, grids: grids });
+    return data;
 }
 
 function generateSequenceForMichel(length, numbers) {
@@ -68,34 +47,6 @@ function generateSequenceForMichel(length, numbers) {
     return sequence.trim();
 }
 
-function regenerateStars() {
-    let rawdata = fs.readFileSync('../lesMillions/src/app/database/data.json');
-    const data = JSON.parse(rawdata);
-
-    for (let i = 0; i < participants.length - 1; i++) {
-        for (let j = 0; j < gridNumberPerParticipant; j++) {
-            data.table[i].grids[j].stars = generateNumbers(2, starNumbers, hotStarNumbers);
-        }
-    }
-
-    fs.writeFile('../lesMillions/src/app/database/data.json', JSON.stringify(data), (err) => {
-        if (err) throw err;
-    });
-
-}
-
-function regenerateStarsForMichel() {
-    let rawdata = fs.readFileSync('../lesMillions/src/app/database/data.json');
-    const data = JSON.parse(rawdata);
-
-    for (let j = 0; j < gridNumberPerParticipant; j++) {
-        data.table[participants.length - 1].grids[j].stars = generateSequenceForMichel(2, allStars);
-    }
-
-    fs.writeFile('../lesMillions/src/app/database/data.json', JSON.stringify(data), (err) => {
-        if (err) throw err;
-    });
-}
 
 function generateNumbers(length, numbers, hotNumbers) {
     const copyHotNumbers = [...hotNumbers];
@@ -114,5 +65,13 @@ function getArrayIndex(array) {
     return Math.floor(Math.random() * array.length);
 }
 
-// regenerateStars();
-regenerateStarsForMichel();
+function readFromDatabase() {
+    let rawdata = fs.readFileSync('../lesMillions/src/app/database/data.json');
+    return JSON.parse(rawdata);
+}
+
+function writeToDatabase(data) {
+    fs.writeFile('../lesMillions/src/app/database/data.json', JSON.stringify(data), (err) => {
+        if (err) throw err;
+    });
+}
